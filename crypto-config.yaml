@@ -1,0 +1,20 @@
+OrdererOrgs:
+  - Name: AGSX
+    Domain: agsx.net
+    Specs:
+      - Hostname: orderer
+PeerOrgs:
+  - Name: Amihan
+    Domain: amihan.net
+    Specs:
+      - Hostname: peer0
+      - Hostname: peer1
+    Users:
+      Count: 1
+  - Name: Acaleph
+    Domain: acale.ph
+    Specs:
+      - Hostname: peer0
+      - Hostname: peer1
+    Users:
+      Count: 1

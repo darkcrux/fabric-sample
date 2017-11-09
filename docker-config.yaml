@@ -1,0 +1,303 @@
+
+version: '2'
+
+networks:
+  amihan-net:
+
+services:
+
+  #
+  # Not running the CA for now. This is useful for adding new users. Currently each peer has two users: `Admin` and `User1`
+  #
+
+  # ca.amihan.net:
+  #   container_name: amihan-ca
+  #   hostname: amihan-ca
+  #   networks:
+  #     - amihan-net
+  #   image: hyperledger/fabric-ca
+  #   command: sh -c 'fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.amihan.net-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/26c0fa30ed0c586aa062c262e1ce166d6975dfece4b3f165a8de4dbb76207318_sk -b admin:adminpw -d'
+  #   environment:
+  #     - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server 
+  #     - FABRIC_CA_SERVER_CA_NAME=ca-amihan
+  #     - FABRIC_CA_SERVER_TLS_ENABLED=true
+  #     - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.amihan.net-cert.pem
+  #     - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/26c0fa30ed0c586aa062c262e1ce166d6975dfece4b3f165a8de4dbb76207318_sk
+  #   volumes:
+  #     - ./crypto-config/peerOrganizations/amihan.net/ca/:/etc/hyperledger/fabric-ca-server-config
+  #     - /etc/hosts:/etc/hosts
+  #   ports:
+  #     - 7054:7054
+
+  # ca.acale.ph:
+  #   container_name: acaleph-ca
+  #   hostname: acaleph-ca
+  #   networks:
+  #     - amihan-net
+  #   image: hyperledger/fabric-ca
+  #   command: sh -c 'fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.acale.ph-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/b69d7db91389a864816d8ee435ec738a01d653786cc2df89bfdec5fc973c651a_sk -b admin:adminpw -d'
+  #   environment:
+  #     - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server 
+  #     - FABRIC_CA_SERVER_CA_NAME=ca-acaleph
+  #     - FABRIC_CA_SERVER_TLS_ENABLED=true
+  #     - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.acale.ph-cert.pem
+  #     - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/b69d7db91389a864816d8ee435ec738a01d653786cc2df89bfdec5fc973c651a_sk
+  #   volumes:
+  #     - ./crypto-config/peerOrganizations/acale.ph/ca/:/etc/hyperledger/fabric-ca-server-config
+  #     - /etc/hosts:/etc/hosts
+  #   ports:
+  #     - 8054:7054
+
+  orderer.agsx.net:
+    container_name: orderer
+    hostname: orderer
+    networks:
+      - amihan-net
+    image: asia.gcr.io/amihan-simula/fabric
+    command: orderer
+    environment:
+      - ORDERER_GENERAL_LOGLEVEL=debug
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=AGSXMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=false
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+    volumes:
+      - ./channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+      - ./crypto-config/ordererOrganizations/agsx.net/orderers/orderer.agsx.net/msp:/var/hyperledger/orderer/msp
+      - ./crypto-config/ordererOrganizations/agsx.net/orderers/orderer.agsx.net/tls/:/var/hyperledger/orderer/tls
+      - /etc/hosts:/etc/hosts
+    ports:
+      - 7050:7050
+
+  peer0.amihan.net:
+    container_name: amihan-peer0
+    hostname: peer0
+    networks:
+      - amihan-net
+    image: asia.gcr.io/amihan-simula/fabric
+    command: peer node start
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=fabric_amihan-net
+      - CORE_LOGGING_LEVEL=DEBUG
+      - CORE_PEER_TLS_ENABLED=false
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_PEER_ID=peer0.amihan.net
+      - CORE_PEER_ADDRESS=peer0.amihan.net:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.amihan.net:7051
+      - CORE_PEER_LOCALMSPID=AmihanMSP
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./crypto-config/peerOrganizations/amihan.net/peers/peer0.amihan.net/msp:/etc/hyperledger/fabric/msp
+      - ./crypto-config/peerOrganizations/amihan.net/peers/peer0.amihan.net/tls:/etc/hyperledger/fabric/tls
+      - /etc/hosts:/etc/hosts
+    ports:
+      - 7051:7051
+      - 7053:7053
+
+  peer1.amihan.net:
+    container_name: amihan-peer1
+    hostname: peer1
+    networks:
+      - amihan-net
+    image: asia.gcr.io/amihan-simula/fabric
+    command: peer node start
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=fabric_amihan-net
+      - CORE_LOGGING_LEVEL=DEBUG
+      - CORE_PEER_TLS_ENABLED=false
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_PEER_ID=peer1.amihan.net
+      - CORE_PEER_ADDRESS=peer1.amihan.net:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.amihan.net:7051
+      - CORE_PEER_LOCALMSPID=AmihanMSP
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./crypto-config/peerOrganizations/amihan.net/peers/peer1.amihan.net/msp:/etc/hyperledger/fabric/msp
+      - ./crypto-config/peerOrganizations/amihan.net/peers/peer1.amihan.net/tls:/etc/hyperledger/fabric/tls
+      - /etc/hosts:/etc/hosts
+    ports:
+      - 8051:7051
+      - 8053:7053
+
+  peer0.acale.ph:
+    container_name: acaleph-peer0
+    hostname: peer0
+    networks:
+      - amihan-net
+    image: asia.gcr.io/amihan-simula/fabric
+    command: peer node start
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=fabric_amihan-net
+      - CORE_LOGGING_LEVEL=DEBUG
+      - CORE_PEER_TLS_ENABLED=false
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_PEER_ID=peer0.acale.ph
+      - CORE_PEER_ADDRESS=peer0.acale.ph:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.acale.ph:7051
+      - CORE_PEER_LOCALMSPID=AcalephMSP
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./crypto-config/peerOrganizations/acale.ph/peers/peer0.acale.ph/msp:/etc/hyperledger/fabric/msp
+      - ./crypto-config/peerOrganizations/acale.ph/peers/peer0.acale.ph/tls:/etc/hyperledger/fabric/tls
+      - /etc/hosts:/etc/hosts
+    ports:
+      - 9051:7051
+      - 9053:7053
+
+  peer1.acale.ph:
+    container_name: acaleph-peer1
+    hostname: peer1
+    networks:
+      - amihan-net
+    image: asia.gcr.io/amihan-simula/fabric
+    command: peer node start
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=fabric_amihan-net
+      - CORE_LOGGING_LEVEL=DEBUG
+      - CORE_PEER_TLS_ENABLED=false
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_PEER_ID=peer1.acale.ph
+      - CORE_PEER_ADDRESS=peer1.acale.ph:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.acale.ph:7051
+      - CORE_PEER_LOCALMSPID=AcalephMSP
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./crypto-config/peerOrganizations/acale.ph/peers/peer1.acale.ph/msp:/etc/hyperledger/fabric/msp
+      - ./crypto-config/peerOrganizations/acale.ph/peers/peer1.acale.ph/tls:/etc/hyperledger/fabric/tls
+      - /etc/hosts:/etc/hosts
+    ports:
+      - 10051:7051
+      - 10053:7053
+
+  amihan-cli1:
+    container_name: cli1
+    hostname: cli1
+    networks:
+      - amihan-net
+    image: asia.gcr.io/amihan-simula/fabric
+    command: bash -c 'while :; do sleep 1; done'
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_LOGGING_LEVEL=DEBUG
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=peer0.amihan.net:7051
+      - CORE_PEER_LOCALMSPID=AmihanMSP
+      - CORE_PEER_TLS_ENABLED=false
+      - CORE_PEER_TLS_CERT_FILE=/opt/hyperledger/fabric/crypto/peerOrganizations/amihan.net/peers/peer0.amihan.net/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/hyperledger/fabric/crypto/peerOrganizations/amihan.net/peers/peer0.amihan.net/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/hyperledger/fabric/crypto/peerOrganizations/amihan.net/peers/peer0.amihan.net/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/hyperledger/fabric/crypto/peerOrganizations/amihan.net/users/Admin@amihan.net/msp
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./crypto-config:/opt/hyperledger/fabric/crypto/
+      - ./channel-artifacts:/opt/hyperledger/fabric/channel-artifacts
+      - /Users/dexter/Work/go/src/github.com/darkcrux/sample-chaincode:/opt/gopath/src/github.com/darkcrux/sample-chaincode
+      - /etc/hosts:/etc/hosts
+
+  amihan-cli2:
+    container_name: cli2
+    hostname: cli2
+    networks:
+      - amihan-net
+    image: asia.gcr.io/amihan-simula/fabric
+    command: bash -c 'while :; do sleep 1; done'
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_LOGGING_LEVEL=DEBUG
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=peer1.amihan.net:7051
+      - CORE_PEER_LOCALMSPID=AmihanMSP
+      - CORE_PEER_TLS_ENABLED=false
+      - CORE_PEER_TLS_CERT_FILE=/opt/hyperledger/fabric/crypto/peerOrganizations/amihan.net/peers/peer0.amihan.net/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/hyperledger/fabric/crypto/peerOrganizations/amihan.net/peers/peer0.amihan.net/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/hyperledger/fabric/crypto/peerOrganizations/amihan.net/peers/peer0.amihan.net/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/hyperledger/fabric/crypto/peerOrganizations/amihan.net/users/Admin@amihan.net/msp
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./crypto-config:/opt/hyperledger/fabric/crypto/
+      - ./channel-artifacts:/opt/hyperledger/fabric/channel-artifacts
+      - /Users/dexter/Work/go/src/github.com/darkcrux/sample-chaincode:/opt/gopath/src/github.com/darkcrux/sample-chaincode
+      - /etc/hosts:/etc/hosts
+
+  amihan-cli3:
+    container_name: cli3
+    hostname: cli3
+    networks:
+      - amihan-net
+    image: asia.gcr.io/amihan-simula/fabric
+    command: bash -c 'while :; do sleep 1; done'
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_LOGGING_LEVEL=DEBUG
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=peer0.acale.ph:7051
+      - CORE_PEER_LOCALMSPID=AcalephMSP
+      - CORE_PEER_TLS_ENABLED=false
+      - CORE_PEER_TLS_CERT_FILE=/opt/hyperledger/fabric/crypto/peerOrganizations/amihan.net/peers/peer0.amihan.net/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/hyperledger/fabric/crypto/peerOrganizations/amihan.net/peers/peer0.amihan.net/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/hyperledger/fabric/crypto/peerOrganizations/amihan.net/peers/peer0.amihan.net/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/hyperledger/fabric/crypto/peerOrganizations/acale.ph/users/Admin@acale.ph/msp
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./crypto-config:/opt/hyperledger/fabric/crypto/
+      - ./channel-artifacts:/opt/hyperledger/fabric/channel-artifacts
+      - /Users/dexter/Work/go/src/github.com/darkcrux/sample-chaincode:/opt/gopath/src/github.com/darkcrux/sample-chaincode
+      - /etc/hosts:/etc/hosts
+
+  amihan-cli4:
+    container_name: cli4
+    hostname: cli4
+    networks:
+      - amihan-net
+    image: asia.gcr.io/amihan-simula/fabric
+    command: bash -c 'while :; do sleep 1; done'
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_LOGGING_LEVEL=DEBUG
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=peer1.acale.ph:7051
+      - CORE_PEER_LOCALMSPID=AcalephMSP
+      - CORE_PEER_TLS_ENABLED=false
+      - CORE_PEER_TLS_CERT_FILE=/opt/hyperledger/fabric/crypto/peerOrganizations/amihan.net/peers/peer0.amihan.net/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/hyperledger/fabric/crypto/peerOrganizations/amihan.net/peers/peer0.amihan.net/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/hyperledger/fabric/crypto/peerOrganizations/amihan.net/peers/peer0.amihan.net/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/hyperledger/fabric/crypto/peerOrganizations/acale.ph/users/Admin@acale.ph/msp
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./crypto-config:/opt/hyperledger/fabric/crypto/
+      - ./channel-artifacts:/opt/hyperledger/fabric/channel-artifacts
+      - /Users/dexter/Work/go/src/github.com/darkcrux/sample-chaincode:/opt/gopath/src/github.com/darkcrux/sample-chaincode
+      - /etc/hosts:/etc/hosts

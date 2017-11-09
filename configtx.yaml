@@ -1,0 +1,60 @@
+---
+
+Profiles:
+    TwoOrgsOrdererGenesis:
+        Orderer:
+            <<: *OrdererDefaults
+            Organizations:
+                - *AGSX
+        Consortiums:
+            SampleConsortium:
+                Organizations:
+                    - *Amihan
+                    - *Acaleph
+    TwoOrgsChannel:
+        Consortium: SampleConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *Amihan
+                - *Acaleph
+
+Organizations:
+
+    - &AGSX
+        Name: AGSX
+        ID: AGSXMSP
+        MSPDir: crypto-config/ordererOrganizations/agsx.net/msp
+
+    - &Amihan
+        Name: Amihan
+        ID: AmihanMSP
+        MSPDir: crypto-config/peerOrganizations/amihan.net/msp
+        AnchorPeers:
+            - Host: peer0.amihan.net
+              Port: 7051
+
+    - &Acaleph
+        Name: Acaleph
+        ID: AcalephMSP
+        MSPDir: crypto-config/peerOrganizations/acale.ph/msp
+        AnchorPeers:
+            - Host: peer0.acale.ph
+              Port: 7051
+
+Orderer: &OrdererDefaults
+    OrdererType: solo
+    Addresses:
+        - orderer.agsx.net:7050
+    BatchTimeout: 2s
+    BatchSize:
+        MaxMessageCount: 10
+        AbsoluteMaxBytes: 99 MB
+        PreferredMaxBytes: 512 KB
+    Kafka:
+        Brokers:
+            - 127.0.0.1:9092
+    Organizations:
+
+Application: &ApplicationDefaults
+    Organizations:
