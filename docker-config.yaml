@@ -83,7 +83,7 @@ services:
     image: asia.gcr.io/amihan-simula/fabric
     command: peer node start
     environment:
-      - CORE_VM_ENDPOINT=http://172.17.0.1:2375
+      - CORE_VM_ENDPOINT=unix:///var/run/docker.sock
       - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=fabricsample_amihan-net
       - CORE_LOGGING_LEVEL=DEBUG
       - CORE_PEER_TLS_ENABLED=false
@@ -114,7 +114,7 @@ services:
     image: asia.gcr.io/amihan-simula/fabric
     command: peer node start
     environment:
-      - CORE_VM_ENDPOINT=http://172.17.0.1:2375
+      - CORE_VM_ENDPOINT=unix:///var/run/docker.sock
       - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=fabricsample_amihan-net
       - CORE_LOGGING_LEVEL=DEBUG
       - CORE_PEER_TLS_ENABLED=false
@@ -145,7 +145,7 @@ services:
     image: asia.gcr.io/amihan-simula/fabric
     command: peer node start
     environment:
-      - CORE_VM_ENDPOINT=http://172.17.0.1:2375
+      - CORE_VM_ENDPOINT=unix:///var/run/docker.sock
       - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=fabricsample_amihan-net
       - CORE_LOGGING_LEVEL=DEBUG
       - CORE_PEER_TLS_ENABLED=false
@@ -176,7 +176,7 @@ services:
     image: asia.gcr.io/amihan-simula/fabric
     command: peer node start
     environment:
-      - CORE_VM_ENDPOINT=http://172.17.0.1:2375
+      - CORE_VM_ENDPOINT=unix:///var/run/docker.sock
       - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=fabricsample_amihan-net
       - CORE_LOGGING_LEVEL=DEBUG
       - CORE_PEER_TLS_ENABLED=false
@@ -208,7 +208,7 @@ services:
     command: bash -c 'while :; do sleep 1; done'
     environment:
       - GOPATH=/opt/gopath
-      - CORE_VM_ENDPOINT=http://172.17.0.1:2375
+      - CORE_VM_ENDPOINT=unix:///var/run/docker.sock
       - CORE_LOGGING_LEVEL=DEBUG
       - CORE_PEER_ID=cli
       - CORE_PEER_ADDRESS=peer0.amihan.net:7051
@@ -234,7 +234,7 @@ services:
     command: bash -c 'while :; do sleep 1; done'
     environment:
       - GOPATH=/opt/gopath
-      - CORE_VM_ENDPOINT=http://172.17.0.1:2375
+      - CORE_VM_ENDPOINT=unix:///var/run/docker.sock
       - CORE_LOGGING_LEVEL=DEBUG
       - CORE_PEER_ID=cli
       - CORE_PEER_ADDRESS=peer1.amihan.net:7051
@@ -260,7 +260,7 @@ services:
     command: bash -c 'while :; do sleep 1; done'
     environment:
       - GOPATH=/opt/gopath
-      - CORE_VM_ENDPOINT=http://172.17.0.1:2375
+      - CORE_VM_ENDPOINT=unix:///var/run/docker.sock
       - CORE_LOGGING_LEVEL=DEBUG
       - CORE_PEER_ID=cli
       - CORE_PEER_ADDRESS=peer0.acale.ph:7051
@@ -286,7 +286,7 @@ services:
     command: bash -c 'while :; do sleep 1; done'
     environment:
       - GOPATH=/opt/gopath
-      - CORE_VM_ENDPOINT=http://172.17.0.1:2375
+      - CORE_VM_ENDPOINT=unix:///var/run/docker.sock
       - CORE_LOGGING_LEVEL=DEBUG
       - CORE_PEER_ID=cli
       - CORE_PEER_ADDRESS=peer1.acale.ph:7051
